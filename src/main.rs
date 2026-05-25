@@ -1,5 +1,7 @@
 use ggez::event::{self, EventHandler};
-use ggez::graphics::{self, Color, DrawParam, GraphicsContext, Image, ImageFormat};
+use ggez::graphics::{
+    self, Color, DrawParam, GraphicsContext, Image, ImageFormat, Text, TextFragment,
+};
 use ggez::{Context, ContextBuilder, GameResult};
 use std::time::Instant;
 
@@ -41,15 +43,19 @@ struct Game {
     size: f32,
     offset: f32,
     speed: f32,
+    last_update: Instant,
+    fps: f32,
 }
 
 impl Default for Game {
     fn default() -> Self {
         Self {
             start_time: Instant::now(),
-            size: 16.0,
+            size: 2.0,
             offset: 0.0,
             speed: 1.0,
+            last_update: Instant::now(),
+            fps: 0.0,
         }
     }
 }
@@ -57,6 +63,9 @@ impl Default for Game {
 impl EventHandler for Game {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         self.offset = (Instant::now() - self.start_time).as_secs_f32() * self.speed;
+        let now = Instant::now();
+        self.fps = 1.0 / (now - self.last_update).as_secs_f32();
+        self.last_update = now;
         Ok(())
     }
 
@@ -77,6 +86,14 @@ impl EventHandler for Game {
         }
         canvas.draw(&image.to_ggez_image(&ctx.gfx), DrawParam::default());
 
+        let fps_text = Text::new(
+            TextFragment::new(format!("{:.2}", self.fps))
+                .scale(32.0)
+                .color(Color::BLACK),
+        );
+
+        canvas.draw(&fps_text, DrawParam::default());
+
         canvas.finish(ctx)
     }
 }
@@ -84,7 +101,7 @@ impl EventHandler for Game {
 fn main() -> GameResult {
     let (ctx, event_loop) = ContextBuilder::new("rust-game", "Artem Vasenin").build()?;
     let game = Game {
-        speed: 50.0,
+        speed: 5.0,
         ..Default::default()
     };
     event::run(ctx, event_loop, game)
