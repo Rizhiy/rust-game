@@ -5,4 +5,7 @@ edition = "2024"
 
 [dependencies]
 ggez = "0.9.3"
+glam = "0.33.0"
+noise = "0.9.0"
 pollster = "0.4.0"
+rand = { version = "0.10.1", features = ["chacha", "serde"] }
